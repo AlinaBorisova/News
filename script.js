@@ -67,8 +67,8 @@ const getImage = url => new Promise((resolve) => {
   return image;
 });
 
-const renderCard = (data) => {
-  newsList.textContent = '';
+const renderCardSearch = (data) => {
+  newsListSearch.textContent = '';
   data.forEach(async news => {
     const card = document.createElement('li');
     card.className = 'news-item';
@@ -90,29 +90,61 @@ const renderCard = (data) => {
       </div>
     `;
 
-    newsList.append(card)
+    newsListSearch.append(card)
+  });
+};
+
+const renderCardNew = (data) => {
+  newsListNew.textContent = '';
+  data.forEach(async news => {
+    const card = document.createElement('li');
+    card.className = 'news-item';
+
+    const image = await getImage(news.urlToImage);
+    image.alt = title;
+    card.append(image)
+
+    card.innerHTML += `
+      <h3 class="news-title">
+        <a href="${news.url}" class="news-link" target="_blank">${news.title || ''}</a>
+      </h3>
+      <p class="news-description">${news.description || ''}</p>
+      <div class="news-footer">
+        <time class="news-datetime" datetime="${news.publishedAt}">
+          ${getDateFormat(news.publishedAt)}
+        </time>
+        <p class="news-author">${news.author || ''}</p>
+      </div>
+    `;
+
+    newsListNew.append(card);
   });
 };
 
 const showError = () => {
-  newsList.textContent = '';
+  newsListSearch.textContent = '';
   title.textContent = `Упс, ошибочка`;
   title.classList.remove('hide');
 };
 
 const loadNews = async () => {
-  newsList.innerHTML = '<li class="preload"></li>'; // Для дополнительного задания
+  newsListNew.innerHTML = '<li class="preload"></li>'; // Для дополнительного задания
   const country = localStorage.getItem('country') || 'ru';
   choises.setChoiceByValue(country);
   title.classList.add('hide')
 
-  const data = await getdata(showError, `https://newsapi.org/v2/top-headlines?country=${country}&pageSize=100`);
-  renderCard(data.articles);
+  const data = await getdata(showError, `https://newsapi.org/v2/top-headlines?country=${country}&pageSize=20`);
+  
+  return Promise.all([
+      data, {
+      callback: renderCardNew(data.articles),
+    }
+  ])
 };
 
 const loadSearch = async value => {
-  newsList.innerHTML = '<li class="preload"></li>'; // Для дополнительного задания
-  const data = await getdata(showError, `https://newsapi.org/v2/everything?q=${value}&pageSize=100`);
+  newsListSearch.innerHTML = '<li class="preload"></li>'; // Для дополнительного задания
+  const data = await getdata(showError, `https://newsapi.org/v2/everything?q=${value}&pageSize=8`);
   title.classList.remove('hide');
   const found = ['найден', 'найдено', 'найдено'];
   const result = ['результат', 'результата', 'результатов'];
@@ -120,7 +152,11 @@ const loadSearch = async value => {
   title.textContent = `По вашему запросу "${value}" ${declOfNum(count, found)} ${count} ${declOfNum(count, result)}`;
   choises.setChoiceByValue('');
 
-  renderCard(data.articles);
+  return Promise.all([
+    data, {
+    callback: renderCardSearch(data.articles),
+  }
+])
 }
 
 choicesElem.addEventListener('change', function(event) {
@@ -133,6 +169,11 @@ formSearch.addEventListener('submit', event => {
   event.preventDefault();
   loadSearch(formSearch.search.value);
   formSearch.reset();
-})
+});
+
+const twitter = document.querySelectorAll('.social-link')[0];
+const habr = document.querySelectorAll('.social-link')[1];
+const vk = document.querySelectorAll('.social-link')[2];
+
 
 loadNews();

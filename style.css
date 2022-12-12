@@ -259,6 +259,7 @@
   
   .footer-logo {
     justify-self: start;
+    padding-left: 150px;
   }
   
   .copyright {
@@ -272,6 +273,8 @@
     align-items: center;
     justify-self: end;
     gap: 15px;
+    padding-right: 150px;
+
   }
   
   .social-link {
@@ -286,11 +289,13 @@
     color: black
   }
   
-  .footer-container {
+  .footer {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     justify-content: space-between;
     gap: 20px;
+    padding-top: 22px;
+    padding-bottom: 30px;
   }
   
   /* прелоад */
